@@ -6,6 +6,7 @@ import { HashRouter, Route, Routes, Navigate } from "react-router-dom";
 import store from "./Kambaz/store";
 import { Provider } from "react-redux";
 import AssignmentEditor from './Kambaz/Courses/Assignments/Editor.tsx';
+// import Quizzes from './Kambaz/Courses/Quizzes/index.tsx';
 
 function App() {
   //const [count, setCount] = useState(0)
@@ -21,6 +22,7 @@ function App() {
         <Route path="/Labs/*" element={<Labs />} />
         <Route path="/Kambaz/*" element={<Kambaz />} />
         <Route path="/Kambaz/Courses/:cid/Assignments/assignmentId" element={<AssignmentEditor />} />
+        {/* <Route path="/Kambaz/Courses/:cid/Quizzes/" element={<Quizzes />}/> */}
 
         </Routes>
       </div>

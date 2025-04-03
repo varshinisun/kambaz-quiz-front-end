@@ -15,11 +15,11 @@ import AddRedux from "./ReduxExamples/AddRedux";
 import TodoList from "./ReduxExamples/todos/TodoList";
 import CounterRedux from "./ReduxExamples/CounterRedux";
 
-export default function Lab3() {
+export default function Lab4() {
      function sayHello() { alert("Hello"); }
       
      return(
-          <div id="wd-lab3">
+          <div id="wd-lab4">
           <h1>Lab 4</h1>
           <h2>CS 4550 Online Section Varshini Sundaresan</h2>
           <hr></hr>
