@@ -1,14 +1,18 @@
-import { useParams } from "react-router-dom";
-import * as db from "../../Database";
+// import { useParams } from "react-router-dom";
+// import * as db from "../../Database";
 import { FaUserCircle } from "react-icons/fa";
 import { Table } from "react-bootstrap";
+import PeopleDetails from "./Details";
+import { Link } from "react-router";
 
-export default function PeopleTable() {
-  const { cid } = useParams();
-  const { users, enrollments } = db;
+export default function PeopleTable({ users = [] }: { users?: any[] }) {
+  // const { cid } = useParams();
+  // const { users, enrollments } = db;
 
   return (
     <div id="wd-people-table" className="table-responsive">
+     <PeopleDetails />
+
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -22,16 +26,18 @@ export default function PeopleTable() {
         </thead>
         <tbody>
           {users
-            .filter((usr) =>
-              enrollments.some(
-                (enrollment) => enrollment.user === usr._id && enrollment.course === cid
-              )
-            )
+            // .filter((usr) =>
+            //   enrollments.some(
+            //     (enrollment) => enrollment.user === usr._id && enrollment.course === cid
+            //   )
+            // )
             .map((user: any) => (
               <tr key={user._id}>
                 <td className="text-start">
+                <Link to={`/Kambaz/Account/Users/${user._id}`} className="text-decoration-none">
                   <FaUserCircle className="me-2 fs-4 text-secondary" />
-                  {user.firstName} {user.lastName}
+                  <span className="wd-first-name">{user.firstName}</span>{" "}
+                  <span className="wd-last-name">{user.lastName}</span>                  </Link>
                 </td>
                 <td className="text-start">{user.loginId}</td>
                 <td className="text-start">{user.section}</td>

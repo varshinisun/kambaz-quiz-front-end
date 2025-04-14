@@ -2,7 +2,8 @@ import { ListGroup, Button, Form } from "react-bootstrap";
 import { RxDotsVertical, RxDragHandleDots2 } from "react-icons/rx";
 import { RiArrowDropDownFill } from "react-icons/ri";
 import GreenCheckmark from "../Modules/GreenCheckmark";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { IoIosRocket } from "react-icons/io";
 
@@ -41,7 +42,7 @@ export default function Quizzes() {
           <RxDragHandleDots2 />
           <RiArrowDropDownFill />
           QUIZZES
-          <Button variant="outline-secondary" size="sm">20% of Total</Button>
+          <Button variant="outline-secondary" size="sm">30% of Total</Button>
           <Button variant="" size="sm">+</Button>
           <RxDotsVertical className="me-2" />
         </ListGroup.Item>
@@ -56,14 +57,15 @@ export default function Quizzes() {
             >
               {quiz.title}
             </a>
-            <div className="text-danger small">Available until {quiz.availableUntil}</div>
+            <div className="text-danger small">
+              Available until {quiz.availableUntil}
+            </div>
             <div className="fw-normal text-muted small">
               Due {quiz.dueDate} | {quiz.points} Points{" "}
               {quiz.published ? <GreenCheckmark /> : <span className="text-muted">🚫</span>}
               <RxDotsVertical />
             </div>
           </ListGroup.Item>
-          
         ))}
       </ListGroup>
     </div>
