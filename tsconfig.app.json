@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "Lab5/index.js", "Lab5/PathParameters.js"]
+  // "include": ["src", "Lab5/index.js", "Lab5/PathParameters.js"]
 }
