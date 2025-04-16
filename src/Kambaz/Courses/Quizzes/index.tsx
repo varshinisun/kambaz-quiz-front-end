@@ -6,6 +6,7 @@ import { useParams } from "react-router";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { IoIosRocket } from "react-icons/io";
+import dayjs from "dayjs";
 
 export default function Quizzes() {
   const { cid } = useParams();
@@ -14,8 +15,21 @@ export default function Quizzes() {
   const { quizzes } = useSelector((state: any) => state.quizReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const isFaculty = currentUser?.role === "FACULTY";
+  const isStudent = currentUser?.role === "STUDENT";
 
   const courseQuizzes = quizzes.filter((quiz: any) => quiz.course === cid);
+  const now = dayjs();
+
+  const getAvailabilityStatus = (quiz: any) => {
+    const availableFrom = dayjs(quiz.availableDate);
+    const availableUntil = dayjs(quiz.availableUntil);
+
+    if (!availableFrom.isValid() || !availableUntil.isValid()) return "Invalid availability dates";
+
+    if (now.isAfter(availableUntil)) return `Closed (after ${availableUntil.format("MMM D, YYYY")})`;
+    if (now.isBefore(availableFrom)) return `Not available until ${availableFrom.format("MMM D, YYYY")}`;
+    return `Available until ${availableUntil.format("MMM D, YYYY")}`;
+  };
 
   return (
     <div id="wd-quizzes" className="container mt-4">
@@ -47,26 +61,41 @@ export default function Quizzes() {
           <RxDotsVertical className="me-2" />
         </ListGroup.Item>
 
-        {courseQuizzes.map((quiz: any) => (
-          <ListGroup.Item key={quiz._id} className="wd-quiz-list-item">
-            <RxDragHandleDots2 className="me-2" />
-            <IoIosRocket />
-            <a
-              href={`#/Kambaz/Courses/${cid}/Quizzes/${quiz._id}`}
-              className="wd-quiz-link text-dark text-decoration-none"
-            >
-              {quiz.title}
-            </a>
-            <div className="text-danger small">
-              Available until {quiz.availableUntil}
-            </div>
-            <div className="fw-normal text-muted small">
-              Due {quiz.dueDate} | {quiz.points} Points{" "}
-              {quiz.published ? <GreenCheckmark /> : <span className="text-muted">🚫</span>}
-              <RxDotsVertical />
-            </div>
-          </ListGroup.Item>
-        ))}
+        {courseQuizzes.map((quiz: any) => {
+          const score =
+            isStudent && quiz.attempts?.length
+              ? quiz.attempts[quiz.attempts.length - 1]?.score
+              : null;
+
+          return (
+            <ListGroup.Item key={quiz._id} className="wd-quiz-list-item">
+              <RxDragHandleDots2 className="me-2" />
+              <IoIosRocket />
+              <a
+                href={`#/Kambaz/Courses/${cid}/Quizzes/${quiz._id}`}
+                className="wd-quiz-link text-dark text-decoration-none fw-bold"
+              >
+                {quiz.title}
+              </a>
+
+              <div className="fw-normal text-muted small">
+                {getAvailabilityStatus(quiz)}
+              </div>
+
+              <div className="fw-normal text-muted small">
+                Due: {quiz.dueDate ? dayjs(quiz.dueDate).format("MMM D, YYYY") : "N/A"} | 
+                Points: {quiz.points || 0} | 
+                Questions: {quiz.questions?.length || 0}
+                {isStudent && score !== null && (
+                  <> | Score: {score}</>
+                )}
+                {" "}
+                {quiz.published ? <GreenCheckmark /> : <span className="text-danger">🚫</span>}
+                <RxDotsVertical />
+              </div>
+            </ListGroup.Item>
+          );
+        })}
       </ListGroup>
     </div>
   );
