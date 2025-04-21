@@ -47,6 +47,7 @@ export default function QuizEditor() {
     };
   });
 
+  // const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState(isFaculty ? "details" : "questions");
 
@@ -62,10 +63,12 @@ export default function QuizEditor() {
   };
 
   const handleSave = () => {
+    const totalPoints = quiz.questions.reduce((acc: number, q: any) => acc + (q.points || 0), 0);
+    const updatedQuiz = { totalPoints, ...quiz, };
     if (existingQuiz) {
-      dispatch(updateQuiz(quiz));
+      dispatch(updateQuiz(updatedQuiz));
     } else {
-      dispatch(addQuiz(quiz));
+      dispatch(addQuiz(updatedQuiz));
     }
     navigate(`/Kambaz/Courses/${cid}/Quizzes`);
   };
@@ -78,26 +81,58 @@ export default function QuizEditor() {
     }
   };
 
-  const handleAddQuestion = () => {
-    const newQuestion = {
+const handleAddQuestion = (type: string) => {
+  let newQuestion: any;
+
+  if (type === "True/False") {
+    newQuestion = {
       _id: uuidv4(),
-      title: "New Question",
-      type: "Multiple Choice",
-      options: ["Option 1", "Option 2"],
-      correctAnswer: "Option 1",
+      title: "New True/False Question",
+      type: "True/False",
+      options: ["True", "False"],
+      correctAnswer: "True",
+      feedback: "",
       points: 1,
       editing: true,
     };
-    setQuiz({ ...quiz, questions: [...quiz.questions, newQuestion] });
-  };
+  } else if (type === "Fill in the Blank") {
+    newQuestion = {
+      _id: uuidv4(),
+      title: "New Fill-in-the-Blank Question",
+      type: "Fill in the Blank",
+      correctAnswer: "",
+      feedback: "",
+      points: 1,
+      editing: true,
+    };
+  } else {
+    newQuestion = {
+      _id: uuidv4(),
+      title: "New Multiple Choice Question",
+      type: "Multiple Choice",
+      options: ["Option 1", "Option 2"],
+      correctAnswer: "Option 1",
+      feedback: "",
+      points: 1,
+      editing: true,
+    };
+  }
+
+  setQuiz({ ...quiz, questions: [...quiz.questions, newQuestion] });
+};
+
+
+  // const handleStudentAnswer = (qid: string, value: string) => {
+  //   setAnswers({ ...answers, [qid]: value });
+  // };
 
   return (
     <div id="wd-quiz-editor" className="container mt-4 text-start">
-      <h2>{existingQuiz ? "Quiz Page" : "New Quiz"}</h2>
+      <h2>{existingQuiz ? "Edit Quiz" : "New Quiz"}</h2>
 
       <Tabs activeKey={activeTab} onSelect={handleTabSelect} className="mb-3 text-danger" justify>
         {isFaculty && (
-          <Tab eventKey="details" title="Details">
+          <Tab eventKey="details" title="Details" >
             <Form>
             <Form.Group className="mb-3">
                 <Form.Label>Quiz Type</Form.Label>
@@ -144,7 +179,7 @@ export default function QuizEditor() {
         {isFaculty && (
           <Tab eventKey="editor" title="Editor">
             <Form>
-            {["title", "description", "points", "availableDate", "availableUntil", "dueDate"].map((id) => (
+              {["title", "description", "points", "availableDate", "availableUntil", "dueDate"].map((id) => (
                 <Form.Group key={id} className="mb-3">
                   <Form.Label htmlFor={id}>{id.replace(/([A-Z])/g, " $1")}</Form.Label>
                   <Form.Control
@@ -167,12 +202,20 @@ export default function QuizEditor() {
           </Tab>
         )}
 
-        <Tab eventKey="questions" title="Questions">
+        <Tab eventKey="questions" title={`Questions (${quiz.questions.reduce((acc: number, q: any) => acc + (q.points || 0), 0)} pts)`}>
           {isFaculty && (
-            <Button onClick={handleAddQuestion} variant="success" size="sm" className="mb-3">
-              + New Question
-            </Button>
-          )}
+              <div className="mb-3 d-flex gap-2">
+                <Button onClick={() => handleAddQuestion("Multiple Choice")} variant="success" size="sm">
+                  + Multiple Choice
+                </Button>
+                <Button onClick={() => handleAddQuestion("True/False")} variant="success" size="sm">
+                  + True/False
+                </Button>
+                <Button onClick={() => handleAddQuestion("Fill in the Blank")} variant="success" size="sm">
+                  + Fill in the Blank
+                </Button>
+              </div>
+            )}
           {(quiz.questions || []).length === 0 ? (
             <p className="text-muted">No questions yet.</p>
           ) : (
@@ -205,6 +248,114 @@ export default function QuizEditor() {
                           }}
                         />
                       </Form.Group>
+                      <Form.Group className="mb-2">
+                        <Form.Label>Question Type</Form.Label>
+                        <Form.Select
+                          value={q.type}
+                          onChange={(e) => {
+                            const updated = [...quiz.questions];
+                            updated[idx].type = e.target.value;
+                            setQuiz({ ...quiz, questions: updated });
+                          }}
+                        >
+                          <option>Multiple Choice</option>
+                          <option>True/False</option>
+                          <option>Fill in the Blank</option>
+                        </Form.Select>
+                      </Form.Group>
+
+                      {q.type === "Multiple Choice" && (
+                        <>
+                          <Form.Group className="mb-2">
+                            <Form.Label>Options</Form.Label>
+                            {q.options.map((option: string, i: number) => (
+                              <Form.Control
+                                key={i}
+                                className="mb-1"
+                                type="text"
+                                value={option}
+                                onChange={(e) => {
+                                  const updated = [...quiz.questions];
+                                  updated[idx].options[i] = e.target.value;
+                                  setQuiz({ ...quiz, questions: updated });
+                                }}
+                              />
+                            ))}
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() => {
+                                const updated = [...quiz.questions];
+                                updated[idx].options.push("");
+                                setQuiz({ ...quiz, questions: updated });
+                              }}
+                            >
+                              + Add Option
+                            </Button>
+                          </Form.Group>
+                          <Form.Group className="mb-2">
+                            <Form.Label>Correct Answer</Form.Label>
+                            <Form.Select
+                              value={q.correctAnswer}
+                              onChange={(e) => {
+                                const updated = [...quiz.questions];
+                                updated[idx].correctAnswer = e.target.value;
+                                setQuiz({ ...quiz, questions: updated });
+                              }}
+                            >
+                              {q.options.map((option: string, i: number) => (
+                                <option key={i}>{option}</option>
+                              ))}
+                            </Form.Select>
+                          </Form.Group>
+                        </>
+                      )}
+
+                      {q.type === "True/False" && (
+                        <Form.Group className="mb-2">
+                          <Form.Label>Correct Answer</Form.Label>
+                          <Form.Select
+                            value={q.correctAnswer}
+                            onChange={(e) => {
+                              const updated = [...quiz.questions];
+                              updated[idx].correctAnswer = e.target.value;
+                              setQuiz({ ...quiz, questions: updated });
+                            }}
+                          >
+                            <option>True</option>
+                            <option>False</option>
+                          </Form.Select>
+                        </Form.Group>
+                      )}
+
+                      {q.type === "Fill in the Blank" && (
+                        <Form.Group className="mb-2">
+                          <Form.Label>Correct Answer</Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={q.correctAnswer}
+                            onChange={(e) => {
+                              const updated = [...quiz.questions];
+                              updated[idx].correctAnswer = e.target.value;
+                              setQuiz({ ...quiz, questions: updated });
+                            }}
+                          />
+                        </Form.Group>
+                      )}
+
+                      <Form.Group className="mb-2">
+                        <Form.Label>Feedback</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          value={q.feedback || ""}
+                          onChange={(e) => {
+                            const updated = [...quiz.questions];
+                            updated[idx].feedback = e.target.value;
+                            setQuiz({ ...quiz, questions: updated });
+                          }}
+                        />
+                      </Form.Group>
+
                       <div className="d-flex gap-2">
                         <Button
                           variant="success"
@@ -233,7 +384,7 @@ export default function QuizEditor() {
                   ) : (
                     <div className="d-flex justify-content-between align-items-center">
                       <div>
-                        <strong>{q.title}</strong> — {q.points} pts
+                        <strong>{q.title}</strong> — {q.points} pts — <em>{q.type}</em>
                       </div>
                       {isFaculty && (
                         <Button

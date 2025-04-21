@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { IoIosRocket } from "react-icons/io";
 import dayjs from "dayjs";
+// import QuizPreview from "./Preview";
 
 export default function Quizzes() {
   const { cid } = useParams();
@@ -91,9 +92,20 @@ export default function Quizzes() {
                 )}
                 {" "}
                 {quiz.published ? <GreenCheckmark /> : <span className="text-danger">🚫</span>}
-                <RxDotsVertical />
+
+                {(currentUser?.role === "FACULTY" || quiz.published) && (
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    className="ms-2"
+                    onClick={() => navigate(`/Kambaz/Courses/${cid}/Quizzes/${quiz._id}/preview`)}
+                  >
+                    {currentUser?.role === "FACULTY" ? "Preview" : "Take Quiz"}
+                  </Button>
+                )}
               </div>
             </ListGroup.Item>
+          
           );
         })}
       </ListGroup>
